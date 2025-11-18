@@ -7,3 +7,9 @@ edition = "2024"
 clap = { version = "4.5", features = ["derive"] }
 sysinfo = "0.30"
 winreg = "0.52"
+tokio = { version = "1", features = ["full"] }
+futures = "0.3"
+get_if_addrs = "0.5"
+anyhow = "1.0"
+reqwest = { version = "0.11", features = ["json", "gzip", "stream"] }
+ipnetwork = "0.21.1"
