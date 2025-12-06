@@ -1,5 +1,9 @@
+mod netrun;
+
+use std::net::Ipv4Addr;
 use clap::Parser;
 use sysinfo::Disks;
+use crate::netrun::scan_network;
 
 #[derive(Parser, Debug)]
 #[command(name="syswatch")]
@@ -11,12 +15,16 @@ struct Flags {
     #[arg(short, long)]
     long: bool, //short-form summary of everything
     #[arg(short, long)]
-    win: bool //check for possible enhancements to windows (like disabling bing on windows searchbar
+    win: bool, //check for possible enhancements to windows (like disabling bing on windows searchbar
+    #[arg(short, long)]
+    gateway: Option<std::net::Ipv4Addr>,
+    #[arg(short, long)]
+    subnet: Option<String>,
 }
-fn main() {
+#[tokio::main]
+async fn main() {
     let flags = Flags::parse();
 
-    // Count how many flags were selected
     let selected_count = flags.net as u8 + flags.long as u8 + flags.win as u8;
 
     if selected_count == 0 {
@@ -32,9 +40,14 @@ fn main() {
 
     match () {
         _ if flags.long => run_long(),
-        _ if flags.net => run_network_info(),
+        _ if flags.net => {
+            //Await the async network function
+            if let Err(e) = scan_network(flags.gateway, flags.subnet).await {
+                eprintln!("Network check failed: {e}");
+            }
+        }
         _ if flags.win => run_windows_check(),
-        _ => unreachable!()
+        _ => unreachable!(),
     }
 }
 
@@ -48,10 +61,6 @@ fn show_usage() {
 
 fn run_long() {
     println!("(placeholder) System summary coming soon...");
-}
-
-fn run_network_info() {
-    println!("(placeholder) Network details coming soon...");
 }
 
 fn run_windows_check() {
